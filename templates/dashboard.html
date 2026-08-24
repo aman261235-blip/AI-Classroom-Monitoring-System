@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>AI Classroom Dashboard</title>
+
+    <!-- Bootstrap -->
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css"
+          rel="stylesheet">
+
+    <!-- Custom CSS -->
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/dashboard.css') }}">
+
+</head>
+
+<body>
+
+<!-- ========================= -->
+<!-- HEADER -->
+<!-- ========================= -->
+
+<div class="bg-dark text-white shadow p-4 mb-4">
+
+    <div class="container">
+
+        <h2 class="fw-bold">
+
+            🎓 AI Classroom Monitoring System
+
+        </h2>
+
+        <h5 class="text-warning">
+
+            Presidency University Internship Project
+
+        </h5>
+
+        <p class="mb-0">
+
+            Real-Time Student Monitoring using
+            YOLOv8 • ArcFace • Flask • MySQL
+
+        </p>
+
+    </div>
+
+</div>
+
+<div class="container">
+
+    <h2 class="text-center fw-bold">
+
+        AI Classroom Dashboard
+
+    </h2>
+
+    <p class="text-center text-muted">
+
+        Auto Refresh Every 2 Seconds
+
+    </p>
+
+    <!-- Date & Time -->
+
+    <div class="text-center mb-4">
+
+        <h5 id="current_date"></h5>
+
+        <h5 id="current_time"></h5>
+
+    </div>
+
+    <!-- ========================= -->
+    <!-- DASHBOARD CARDS -->
+    <!-- ========================= -->
+
+    <div class="row">
+
+        <!-- Total Students -->
+
+        <div class="col-md-3 mb-3">
+
+            <div class="card stat-card bg-blue shadow text-center">
+
+                <div class="card-body">
+
+                    <h5>
+
+                        👨‍🎓 Total Students
+
+                    </h5>
+
+                    <h2 id="total_students">
+
+                        {{ total_students }}
+
+                    </h2>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- Attendance -->
+
+        <div class="col-md-3 mb-3">
+
+            <div class="card stat-card bg-green shadow text-center">
+
+                <div class="card-body">
+
+                    <h5>
+
+                        ✅ Today's Attendance
+
+                    </h5>
+
+                    <h2 id="todays_attendance">
+
+                        {{ todays_attendance }}
+
+                    </h2>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- Unknown -->
+
+        <div class="col-md-3 mb-3">
+
+            <div class="card stat-card bg-red shadow text-center">
+
+                <div class="card-body">
+
+                    <h5>
+
+                        ❓ Unknown Persons
+
+                    </h5>
+
+                    <h2 id="unknown_persons">
+
+                        {{ unknown_persons }}
+
+                    </h2>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- Camera -->
+
+        <div class="col-md-3 mb-3">
+
+            <div class="card stat-card bg-orange shadow text-center">
+
+                <div class="card-body">
+
+                    <h5>
+
+                        📷 Camera Status
+
+                    </h5>
+
+                    <h2 id="camera_status">
+
+                        {{ camera_status }}
+
+                    </h2>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <hr>
+
+    <!-- ========================= -->
+    <!-- BUTTONS -->
+    <!-- ========================= -->
+
+    <div class="row g-3 mb-4">
+
+        <div class="col-md-4">
+
+            <a href="/add_student"
+               class="btn btn-primary w-100">
+
+                ➕ Add Student
+
+            </a>
+
+        </div>
+
+        <div class="col-md-4">
+
+            <a href="/students"
+               class="btn btn-success w-100">
+
+                👨‍🎓 Student List
+
+            </a>
+
+        </div>
+
+        <div class="col-md-4">
+
+            <a href="/export_excel"
+               class="btn btn-warning w-100">
+
+                📊 Download Excel Report
+
+            </a>
+
+        </div>
+
+    </div>
+
+    <!-- ========================= -->
+    <!-- SEARCH -->
+    <!-- ========================= -->
+
+    <div class="row mb-4">
+
+        <div class="col-md-6">
+
+            <input
+                type="text"
+                id="searchBox"
+                class="form-control search-box"
+                placeholder="🔍 Search by Student ID or Name..."
+                onkeyup="searchAttendance()">
+
+        </div>
+
+    </div>
+
+    <!-- ========================= -->
+    <!-- ATTENDANCE TABLE -->
+    <!-- ========================= -->
+
+    <div class="card shadow mb-5">
+
+        <div class="card-header bg-dark text-white">
+
+            <h4 class="mb-0">
+
+                📋 Today's Attendance
+
+            </h4>
+
+        </div>
+
+        <div class="card-body">
+
+            <table class="table table-striped table-hover align-middle">
+
+                <thead>
+
+                    <tr>
+
+                        <th>Student ID</th>
+
+                        <th>Name</th>
+
+                        <th>Date</th>
+
+                        <th>Time</th>
+
+                        <th>Status</th>
+
+                    </tr>
+
+                </thead>
+
+                <tbody id="attendance_table">
+
+                {% if attendance_list %}
+
+                    {% for row in attendance_list %}
+
+                    <tr>
+
+                        <td>{{ row.student_id }}</td>
+
+                        <td>{{ row.name }}</td>
+
+                        <td>{{ row.attendance_date }}</td>
+
+                        <td>{{ row.attendance_time }}</td>
+
+                        <td>
+
+                            <span class="badge bg-success">
+
+                                {{ row.status }}
+
+                            </span>
+
+                        </td>
+
+                    </tr>
+
+                    {% endfor %}
+
+                {% else %}
+
+                    <tr>
+
+                        <td colspan="5"
+                            class="text-center">
+
+                            No attendance recorded today.
+
+                        </td>
+
+                    </tr>
+
+                {% endif %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+    <!-- ========================= -->
+    <!-- LIVE CAMERA -->
+    <!-- ========================= -->
+
+    <div class="card shadow">
+
+        <div class="card-header bg-primary text-white">
+
+            <h4 class="mb-0">
+
+                🎥 Live AI Camera Feed
+
+            </h4>
+
+        </div>
+
+        <div class="card-body text-center">
+
+            <img
+                src="{{ url_for('video_feed') }}"
+                class="img-fluid rounded shadow"
+                width="900">
+
+        </div>
+
+    </div>
+
+</div>
+<!-- ========================= -->
+<!-- JAVASCRIPT -->
+<!-- ========================= -->
+
+<script>
+
+async function loadAttendance() {
+
+    try {
+
+        const response = await fetch("/attendance_data");
+
+        const data = await response.json();
+
+        // Dashboard Cards
+
+        document.getElementById("total_students").innerHTML =
+            data.total_students;
+
+        document.getElementById("todays_attendance").innerHTML =
+            data.todays_attendance;
+
+        document.getElementById("unknown_persons").innerHTML =
+            data.unknown_persons ?? 0;
+
+        document.getElementById("camera_status").innerHTML =
+            data.camera_status ?? "ON";
+
+        // Attendance Table
+
+        let html = "";
+
+        if (data.attendance.length === 0) {
+
+            html = `
+                <tr>
+                    <td colspan="5" class="text-center">
+                        No attendance recorded today.
+                    </td>
+                </tr>
+            `;
+
+        } else {
+
+            data.attendance.forEach(function(student){
+
+                html += `
+                    <tr>
+
+                        <td>${student.student_id}</td>
+
+                        <td>${student.name}</td>
+
+                        <td>${student.attendance_date}</td>
+
+                        <td>${student.attendance_time}</td>
+
+                        <td>
+
+                            <span class="badge bg-success">
+
+                                ${student.status}
+
+                            </span>
+
+                        </td>
+
+                    </tr>
+                `;
+
+            });
+
+        }
+
+        document.getElementById("attendance_table").innerHTML = html;
+
+    }
+
+    catch(error){
+
+        console.log(error);
+
+    }
+
+}
+
+// =========================
+// Live Clock
+// =========================
+
+function updateClock(){
+
+    const now = new Date();
+
+    document.getElementById("current_date").innerHTML =
+        "📅 " + now.toLocaleDateString();
+
+    document.getElementById("current_time").innerHTML =
+        "🕒 " + now.toLocaleTimeString();
+
+}
+
+// =========================
+// Attendance Search
+// =========================
+
+function searchAttendance(){
+
+    let input = document
+        .getElementById("searchBox")
+        .value
+        .toLowerCase();
+
+    let rows = document
+        .getElementById("attendance_table")
+        .getElementsByTagName("tr");
+
+    for(let i=0;i<rows.length;i++){
+
+        let rowText = rows[i].innerText.toLowerCase();
+
+        if(rowText.indexOf(input) > -1){
+
+            rows[i].style.display = "";
+
+        }
+
+        else{
+
+            rows[i].style.display = "none";
+
+        }
+
+    }
+
+}
+
+// =========================
+// Initialize
+// =========================
+
+loadAttendance();
+
+updateClock();
+
+setInterval(loadAttendance,2000);
+
+setInterval(updateClock,1000);
+
+</script>
+
+<!-- ========================= -->
+<!-- FOOTER -->
+<!-- ========================= -->
+
+<footer>
+
+    AI Powered Smart Classroom Monitoring System
+
+    <br>
+
+    Developed by Aman
+
+    <br>
+
+    Presidency University
+
+</footer>
+
+</body>
+
+</html>
